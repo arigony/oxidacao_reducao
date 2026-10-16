@@ -20,12 +20,6 @@ Também inclui:
 Para abrir direto num mecanismo, acrescente o código ao endereço, por exemplo:
 `https://SEU-USUARIO.github.io/oxidacao_reducao/#jones`
 
-## Como publicar no GitHub Pages
-
-1. Crie um repositório público chamado `oxidacao_reducao`.
-2. Envie `index.html`, `README.md` e `.nojekyll` para a raiz.
-3. Em **Settings → Pages**, escolha **Deploy from a branch**, branch `main`, pasta `/ (root)`, e clique em **Save**.
-4. Em um ou dois minutos a página estará em `https://SEU-USUARIO.github.io/oxidacao_reducao/`.
 
 ## Uso
 
