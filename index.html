@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Oxidação e redução em química orgânica · simulador</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7f9fb; --paper:#ffffff; --ink:#16263a; --muted:#5b6b7b; --line:#d5dde5;
+  --arrow:#d23a2f; --pos:#1f63c6; --neg:#d23a2f; --accent:#0f5c70; --accent-soft:#e3f0f3;
+  --ok:#1e7a4a; --ok-soft:#e5f4ec; --bad:#b3372d; --bad-soft:#fbeae8; --metal:#b9c2cc;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#10161d; --paper:#18212b; --ink:#e6edf3; --muted:#9aa9b8; --line:#2c3a48;
+    --arrow:#ff6b5e; --pos:#6aa8ff; --neg:#ff6b5e; --accent:#5cc3d6; --accent-soft:#16323a;
+    --ok:#5fd394; --ok-soft:#163326; --bad:#ff8a7e; --bad-soft:#3a1c19; --metal:#46525e;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#10161d; --paper:#18212b; --ink:#e6edf3; --muted:#9aa9b8; --line:#2c3a48;
+  --arrow:#ff6b5e; --pos:#6aa8ff; --neg:#ff6b5e; --accent:#5cc3d6; --accent-soft:#16323a;
+  --ok:#5fd394; --ok-soft:#163326; --bad:#ff8a7e; --bad-soft:#3a1c19; --metal:#46525e;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:16px;line-height:1.55}
+.wrap{max-width:860px;margin:0 auto;padding:20px 16px 48px}
+h1,h2,h3{font-family:"Newsreader",Georgia,"Times New Roman",serif;font-weight:600;line-height:1.2;margin:0}
+h1{font-size:clamp(28px,5vw,40px)}
+.lede{color:var(--muted);margin:8px 0 18px;max-width:62ch}
+.tabs{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 10px;scrollbar-width:thin}
+.tab{flex:0 0 auto;border:1px solid var(--line);background:var(--paper);color:var(--ink);font:inherit;font-size:15px;padding:8px 12px;border-radius:999px;cursor:pointer;white-space:nowrap}
+.tab small{color:var(--muted);margin-right:6px}
+.tab[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+.tab[aria-selected="true"] small{color:inherit;opacity:.8}
+.tab:focus-visible,.btn:focus-visible,.dot:focus-visible,.opt:focus-visible{outline:3px solid var(--pos);outline-offset:2px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.mhead{padding:16px 18px 6px}
+.mhead h2{font-size:26px}
+.mhead p{margin:4px 0 0;color:var(--muted)}
+.stage-wrap{overflow-x:auto;padding:4px 6px 0}
+svg#stage{display:block;width:100%;min-width:320px;height:auto}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 18px 12px;border-bottom:1px solid var(--line)}
+.btn{font:inherit;font-size:15px;border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:8px 14px;border-radius:8px;cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--paper);font-weight:600}
+.btn:disabled{opacity:.4;cursor:default}
+.dots{display:flex;gap:6px;margin:0 6px}
+.dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--accent);background:transparent;padding:0;cursor:pointer}
+.dot[aria-current="step"]{background:var(--accent)}
+.spacer{flex:1}
+.explain{padding:14px 18px 6px}
+.explain h3{font-size:20px;margin-bottom:4px}
+.explain .num{color:var(--muted);font-family:"IBM Plex Sans",sans-serif;font-size:14px;font-weight:500;display:block;margin-bottom:2px}
+.explain p{margin:0 0 6px;max-width:68ch}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border-top:1px solid var(--line);margin-top:10px}
+.facts div{background:var(--paper);padding:10px 18px}
+.facts dt{font-size:13px;color:var(--muted)}
+.facts dd{margin:0;font-weight:600}
+.legend{display:flex;flex-wrap:wrap;gap:14px;color:var(--muted);font-size:14px;margin:12px 2px 0}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+section.block{margin-top:36px}
+section.block h2{font-size:26px;margin-bottom:10px}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--paper)}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:15px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line)}
+th{font-weight:600;background:var(--accent-soft)}
+tr:last-child td{border-bottom:0}
+td a{color:var(--accent);font-weight:600;text-decoration:none}
+.quiz{display:grid;gap:14px}
+.q{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.q p.stem{margin:0 0 10px;font-weight:600}
+.opts{display:grid;gap:8px}
+.opt{font:inherit;text-align:left;border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:9px 12px;border-radius:8px;cursor:pointer}
+.opt.right{background:var(--ok-soft);border-color:var(--ok)}
+.opt.wrong{background:var(--bad-soft);border-color:var(--bad)}
+.fb{margin:10px 0 0;font-size:15px}
+.fb.right{color:var(--ok)} .fb.wrong{color:var(--bad)}
+.fb a{color:inherit;font-weight:600}
+footer{margin-top:36px;color:var(--muted);font-size:14px}
+/* SVG */
+.lab{font-family:"IBM Plex Sans",Arial,sans-serif;font-size:21px;fill:var(--ink)}
+.bond{stroke:var(--ink);stroke-width:2.2;stroke-linecap:round;fill:none}
+.wedge{fill:var(--ink)}
+.lp{fill:var(--ink)}
+.chg-p{stroke:var(--pos);fill:var(--paper)} .chg-pt{fill:var(--pos)}
+.chg-n{stroke:var(--neg);fill:var(--paper)} .chg-nt{fill:var(--neg)}
+.t-note{font-size:16px;fill:var(--muted);font-family:"IBM Plex Sans",sans-serif}
+.t-name{font-size:19px;fill:var(--ink);font-weight:600;font-family:"IBM Plex Sans",sans-serif}
+.t-dp{font-size:17px;fill:var(--pos);font-style:italic}
+.t-dn{font-size:17px;fill:var(--neg);font-style:italic}
+.t-big{font-size:30px;fill:var(--muted)}
+.t-chem{font-size:21px;fill:var(--ink);font-family:"IBM Plex Sans",sans-serif}
+.rxn{stroke:var(--ink);stroke-width:2;fill:none}
+.rxnh{fill:var(--ink)}
+.arr{stroke:var(--arrow);stroke-width:2.4;fill:none;stroke-linecap:round}
+.arrh{fill:var(--arrow)}
+.mv{stroke:var(--muted);stroke-width:2;fill:none;stroke-dasharray:6 5}
+.mvh{fill:var(--muted)}
+.metal{fill:var(--metal)}
+.metal-t{font-size:15px;fill:var(--muted)}
+@media (prefers-reduced-motion: reduce){ *{transition:none!important} }
+.energy{padding:6px 18px 4px;border-top:1px solid var(--line)}
+.energy h3{font-family:"IBM Plex Sans",sans-serif;font-size:14px;font-weight:600;color:var(--muted);margin:6px 0 0}
+svg#energy{display:block;width:100%;max-width:600px;height:auto}
+.ax{stroke:var(--muted);stroke-width:1.5} .axh{fill:var(--muted)}
+.curve{stroke:var(--accent);stroke-width:3;fill:none}
+.edot{fill:var(--arrow);stroke:var(--paper);stroke-width:2.5}
+.ea{stroke:var(--pos);stroke-width:1.6;fill:none} .eah{fill:var(--pos)}
+.t-ea{font-size:16px;fill:var(--pos);font-style:italic}
+.t-elab{font-size:14px;fill:var(--muted)}
+.flow{padding:16px 18px}
+.flow p.lbl{margin:0 0 8px;font-weight:600}
+.fbtns{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.fbtns .opt{flex:1 1 180px}
+.opt[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+.opt small{display:block;font-size:13px;opacity:.8}
+#flowOut{background:var(--accent-soft);border-radius:10px;padding:12px 14px}
+#flowOut p{margin:0 0 6px} .fres{font-family:"Newsreader",Georgia,serif;font-size:24px;font-weight:600}
+#flowOut a{color:var(--accent);font-weight:600}
+
+.ladder{display:grid;gap:6px;margin-bottom:18px}
+.rung{position:relative;display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 12px;padding:9px 12px;border-radius:8px;overflow:hidden;z-index:0}
+.rb{position:absolute;inset:0 auto 0 0;width:var(--w);background:var(--accent-soft);z-index:-1;border-radius:8px}
+.rf{color:var(--muted);font-size:14px}.rl{color:var(--muted);font-size:14px}
+.lad-ax{display:flex;justify-content:space-between;color:var(--muted);font-size:13px;margin:-10px 2px 16px}
+#flowOut.ok{background:var(--ok-soft)} #flowOut.no{background:var(--bad-soft)}
+.fbtns.c5 .opt{flex:1 1 115px}
+
+.t-nv{font-size:16px;fill:var(--ink);font-weight:600}
+.t-red{font-size:15px;fill:var(--pos);font-weight:600}
+.t-ox{font-size:15px;fill:var(--arrow);font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:14px;margin:-6px 2px 16px;color:var(--muted)}
+.chips b.o{color:var(--arrow)} .chips b.r{color:var(--pos)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Oxidação e redução</h1>
+  <p class="lede">Em química orgânica, reduzir é dar ao carbono mais ligações com H (ou menos com O); oxidar é o contrário. Avance etapa por etapa: as setas mostram os elétrons, os átomos se movem e o medidor acompanha o número de oxidação do carbono que reage.</p>
+
+  <nav class="tabs" id="tabs" role="tablist" aria-label="Mecanismos"></nav>
+
+  <div class="card">
+    <div class="mhead"><h2 id="mTitle"></h2><p id="mSub"></p></div>
+    <div class="stage-wrap">
+      <svg id="stage" viewBox="0 0 600 270" role="img" aria-labelledby="stepTitle"><g id="scene"></g><g id="arrows"></g></svg>
+    </div>
+    <div class="controls">
+      <button class="btn" id="prev">◀ Anterior</button>
+      <div class="dots" id="dots"></div>
+      <button class="btn primary" id="next">Próxima ▶</button>
+      <span class="spacer"></span>
+      <button class="btn" id="replay">Repetir setas</button>
+      <button class="btn" id="auto">Reproduzir tudo</button>
+    </div>
+    <div class="explain" aria-live="polite">
+      <span class="num" id="stepNum"></span>
+      <h3 id="stepTitle"></h3>
+      <p id="stepText"></p>
+    </div>
+    <div class="energy"><h3 id="enTitle"></h3><svg id="energy" viewBox="0 0 600 124" aria-hidden="true"></svg></div>
+    <dl class="facts" id="facts"></dl>
+  </div>
+  <div class="legend">
+    <span><svg width="34" height="14"><path d="M2 12 Q17 0 30 10" class="arr"/></svg>movimento de um par de elétrons</span>
+    <span><svg width="14" height="14"><circle cx="7" cy="7" r="6" class="edot"/></svg>número de oxidação do carbono</span>
+  </div>
+
+  <section class="block">
+    <h2>Níveis de oxidação</h2>
+    <div class="card flow">
+      <p style="margin:0 0 12px">Conte as ligações do carbono com oxigênio (ou outro heteroátomo). Subir na escada é oxidar; descer é reduzir.</p>
+      <div class="ladder" id="ladder"></div>
+      <div class="chips"><span><b class="o">▲ oxidantes:</b> PCC, DMP, H₂CrO₄, KMnO₄</span><span><b class="r">▼ redutores:</b> NaBH₄, LiAlH₄, DIBAL-H, H₂/Pd</span></div>
+      <p class="lbl">Partindo de:</p>
+      <div class="fbtns c5" id="cFrom"></div>
+      <p class="lbl">Quero obter:</p>
+      <div class="fbtns c5" id="cTo"></div>
+      <div id="flowOut" hidden aria-live="polite"></div>
+      <p style="margin:12px 0 0"><button class="btn" id="flowReset">Recomeçar</button></p>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2>Quadro comparativo</h2>
+    <div class="tbl"><table id="summary"></table></div>
+  </section>
+
+  <section class="block">
+    <h2>Desafios</h2>
+    <div class="quiz" id="quiz"></div>
+  </section>
+
+  <footer>Química Orgânica · PUCRS. Mecanismos simplificados para revisão.</footer>
+</div>
+<script>
+const A=(x,y,l,o={})=>Object.assign({x,y,l},o);
+const MECH=[
+{id:'nabh4',tab:'NaBH₄',title:'Redução de cetona com NaBH₄',sub:'acetona + NaBH₄, em metanol → 2-propanol',
+ facts:{Reagente:'NaBH₄ (fonte de H⁻)',Tipo:'redução',Transfere:'H⁻ ao C, depois H⁺ ao O','Nox do C':'+2 → 0',Alcance:'aldeídos e cetonas; não reduz ésteres'},
+ steps:[
+ {t:'O hidreto ataca a carbonila',nox:2,d:'O BH₄⁻ entrega um íon hidreto (H⁻, um H com dois elétrons) ao carbono carbonílico δ+. Os elétrons da ligação π vão para o oxigênio. É uma adição nucleofílica: o nucleófilo é o hidreto.',
+  s:{atoms:{c:A(250,140,'C'),o:A(250,62,'O',{lp:[200,340]}),m1:A(165,140,'H3C'),m2:A(335,140,'CH3'),b:A(345,225,'B',{c:'−',cp:[0,-22]}),bh1:A(290,200,'H'),bh2:A(400,200,'H'),bh3:A(400,252,'H'),bh4:A(290,252,'H'),s:A(95,62,'O',{lp:[90,270]}),sh:A(145,62,'H'),sme:A(40,62,'H3C')},
+   bonds:[['c','o',2],['c','m1',1],['c','m2',1],['b','bh1',1],['b','bh2',1],['b','bh3',1],['b','bh4',1],['s','sh',1],['s','sme',1]],
+   texts:[{x:225,y:112,s:'δ+',c:'dp'},{x:95,y:105,s:'metanol (solvente)',c:'note'}],
+   arrows:[{f:[318,212],t:[262,152],b:-15},{f:[256,104],t:[264,74],b:14}]}},
+ {t:'Alcóxido',nox:0,d:'O carbono ganhou um H e passou de +2 para 0: foi reduzido. O oxigênio ficou com carga negativa (alcóxido) e retira um H⁺ do metanol.',
+  s:{atoms:{c:A(250,140,'C'),o:A(250,62,'O',{c:'−',cp:[18,-16],lp:[180,240,0]}),m1:A(165,140,'H3C'),m2:A(335,140,'CH3'),bh1:A(250,222,'H'),b:A(420,225,'B'),bh2:A(470,200,'H'),bh3:A(470,252,'H'),bh4:A(370,252,'H'),s:A(95,62,'O',{lp:[90,270]}),sh:A(145,62,'H'),sme:A(40,62,'H3C')},
+   bonds:[['c','o',1],['c','m1',1],['c','m2',1],['c','bh1',1],['b','bh2',1],['b','bh3',1],['b','bh4',1],['s','sh',1],['s','sme',1]],
+   texts:[{x:420,y:185,s:'BH₃',c:'note'}],
+   arrows:[{f:[232,60],t:[157,58],b:-12},{f:[124,68],t:[104,76],b:8}]}},
+ {t:'Álcool',nox:0,d:'Forma-se o 2-propanol. O NaBH₄ é seletivo: reduz aldeídos (a álcoois 1º) e cetonas (a álcoois 2º), mas não ésteres nem ácidos carboxílicos. Pode ser usado em metanol ou água.',
+  s:{atoms:{c:A(250,140,'C'),o:A(250,62,'O',{lp:[180,240]}),sh:A(300,38,'H'),m1:A(165,140,'H3C'),m2:A(335,140,'CH3'),bh1:A(250,222,'H'),b:A(420,225,'B'),bh2:A(470,200,'H'),bh3:A(470,252,'H'),bh4:A(370,252,'H'),s:A(95,62,'O',{c:'−',lp:[90,270]}),sme:A(40,62,'H3C')},
+   bonds:[['c','o',1],['o','sh',1],['c','m1',1],['c','m2',1],['c','bh1',1],['b','bh2',1],['b','bh3',1],['b','bh4',1],['s','sme',1]],
+   texts:[{x:450,y:80,s:'2-propanol',c:'name'},{x:450,y:106,s:'o C ganhou H: redução',c:'note'}]}}
+ ]},
+
+{id:'lialh4',tab:'LiAlH₄',title:'Redução de éster com LiAlH₄',sub:'acetato de etila + LiAlH₄, depois H₃O⁺ → 2 etanol',
+ facts:{Reagente:'LiAlH₄ (hidreto mais forte)',Tipo:'redução',Transfere:'2 H⁻ ao C, depois H⁺ (tratamento ácido)','Nox do C':'+3 → −1',Alcance:'ésteres, ácidos, aldeídos, cetonas, amidas'},
+ steps:[
+ {t:'Primeiro hidreto',nox:3,d:'O AlH₄⁻ é um doador de hidreto muito mais forte que o BH₄⁻ e ataca até a carbonila de ésteres. Reage violentamente com água: usa-se éter seco ou THF.',
+  s:{atoms:{c:A(250,140,'C'),o:A(250,62,'O',{lp:[200,340]}),me:A(165,140,'H3C'),or:A(335,140,'O',{lp:[90,270]}),et:A(405,140,'Et'),al:A(150,232,'Al',{c:'−',cp:[0,-22]}),ah1:A(205,207,'H'),ah2:A(95,207,'H'),ah3:A(95,257,'H'),ah4:A(205,257,'H')},
+   bonds:[['c','o',2],['c','me',1],['c','or',1],['or','et',1],['al','ah1',1],['al','ah2',1],['al','ah3',1],['al','ah4',1]],
+   texts:[{x:480,y:230,s:'THF seco',c:'note'}],
+   arrows:[{f:[178,220],t:[244,154],b:15},{f:[256,104],t:[264,74],b:14}]}},
+ {t:'Intermediário tetraédrico',nox:1,d:'Como na substituição acílica, o intermediário tetraédrico expulsa o grupo de saída (EtO⁻) e a carbonila se refaz.',
+  s:{atoms:{c:A(250,140,'C'),o:A(250,62,'O',{c:'−',cp:[-16,-16],lp:[0,180,300]}),me:A(165,140,'H3C'),or:A(335,140,'O',{lp:[90,270]}),et:A(405,140,'Et'),ah1:A(250,222,'H'),al:A(100,232,'Al'),ah2:A(50,207,'H'),ah3:A(50,257,'H'),ah4:A(150,257,'H')},
+   bonds:[['c','o',1],['c','me',1],['c','or',1],['or','et',1],['c','ah1',1],['al','ah2',1],['al','ah3',1],['al','ah4',1]],
+   arrows:[{f:[232,62],t:[244,102],b:14},{f:[292,147],t:[330,158],b:14}]}},
+ {t:'Aldeído: reduzido de imediato',nox:1,d:'Forma-se um aldeído, que é mais reativo que o éster de partida. Ele recebe na hora um segundo hidreto, por isso a reação não para no aldeído.',
+  s:{atoms:{c:A(250,140,'C'),o:A(250,62,'O',{lp:[200,340]}),me:A(165,140,'H3C'),ah1:A(335,140,'H'),or:A(470,80,'O',{c:'−',lp:[90,180,270]}),et:A(540,80,'Et'),al2:A(150,232,'Al',{c:'−',cp:[0,-22]}),bh1:A(205,207,'H'),bh2:A(95,207,'H'),bh3:A(95,257,'H'),bh4:A(205,257,'H')},
+   bonds:[['c','o',2],['c','me',1],['c','ah1',1],['or','et',1],['al2','bh1',1],['al2','bh2',1],['al2','bh3',1],['al2','bh4',1]],
+   texts:[{x:470,y:200,s:'aldeído: mais reativo',c:'note'},{x:470,y:224,s:'que o éster',c:'note'}],
+   arrows:[{f:[178,220],t:[244,154],b:15},{f:[256,104],t:[264,74],b:14}]}},
+ {t:'Segundo alcóxido',nox:-1,d:'Após o segundo hidreto, o carbono tem dois H novos e passou de +3 para −1. Os dois oxigênios estão como alcóxidos ligados ao alumínio.',
+  s:{atoms:{c:A(250,140,'C'),o:A(250,62,'O',{c:'−',cp:[-16,-16],lp:[0,180,300]}),me:A(165,140,'H3C'),ah1:A(335,140,'H'),bh1:A(250,222,'H'),or:A(470,80,'O',{c:'−',lp:[90,180,270]}),et:A(540,80,'Et'),al2:A(100,232,'Al'),bh2:A(50,207,'H'),bh3:A(50,257,'H'),bh4:A(150,257,'H')},
+   bonds:[['c','o',1],['c','me',1],['c','ah1',1],['c','bh1',1],['or','et',1],['al2','bh2',1],['al2','bh3',1],['al2','bh4',1]],
+   texts:[{x:470,y:200,s:'tratamento: H₃O⁺',c:'note'}]}},
+ {t:'Dois álcoois',nox:-1,d:'O tratamento com ácido protona os alcóxidos. O éster dá dois álcoois: o etanol que vem da parte acila e o etanol que era o grupo OEt. O NaBH₄ não consegue fazer essa redução.',
+  s:{atoms:{c:A(250,140,'C'),o:A(250,62,'O',{lp:[180,240]}),oh:A(300,38,'H'),me:A(165,140,'H3C'),ah1:A(335,140,'H'),bh1:A(250,222,'H'),or:A(470,80,'O',{lp:[90,180]}),orh:A(470,30,'H'),et:A(540,80,'Et')},
+   bonds:[['c','o',1],['o','oh',1],['c','me',1],['c','ah1',1],['c','bh1',1],['or','et',1],['or','orh',1]],
+   texts:[{x:470,y:190,s:'2 etanol',c:'name'},{x:470,y:216,s:'C: +3 → −1',c:'note'}]}}
+ ]},
+
+{id:'jones',tab:'H₂CrO₄',title:'Oxidação de álcool 2º com ácido crômico',sub:'2-propanol + H₂CrO₄ (reagente de Jones) → acetona',
+ facts:{Reagente:'H₂CrO₄ (CrO₃ + H₂SO₄)',Tipo:'oxidação',Transfere:'o C perde um H e o O perde um H','Nox do C':'0 → +2',Alcance:'álcool 2º → cetona; 1º → ácido; 3º não reage'},
+ steps:[
+ {t:'Formação do éster cromato',nox:0,d:'O oxigênio do álcool ataca o cromo do ácido crômico. Após transferências de próton, sai água e forma-se um éster cromato (C–O–Cr).',
+  s:{atoms:{c:A(300,170,'C'),o:A(300,95,'O',{lp:[0,150]}),oh:A(255,65,'H'),m1:A(215,170,'H3C'),m2:A(385,170,'CH3'),ch:A(300,250,'H'),cr:A(480,95,'Cr'),co1:A(480,35,'O'),co2:A(535,145,'O'),coh:A(560,95,'OH'),cohL:A(405,95,'HO')},
+   bonds:[['c','o',1],['o','oh',1],['c','m1',1],['c','m2',1],['c','ch',1],['cr','co1',2],['cr','co2',2],['cr','coh',1],['cr','cohL',1]],
+   texts:[{x:470,y:245,s:'reagente de Jones',c:'note'}],
+   arrows:[{f:[314,88],t:[466,82],b:-45},{f:[443,101],t:[412,112],b:-12}]}},
+ {t:'Eliminação: o C perde o H',nox:0,d:'Uma base (água) remove o H do carbono ligado ao oxigênio. O par da ligação C–H forma a ligação C=O e o par da ligação O–Cr vai para o cromo. É parecido com uma E2.',
+  s:{atoms:{c:A(300,170,'C'),o:A(300,95,'O',{lp:[200]}),m1:A(215,170,'H3C'),m2:A(385,170,'CH3'),ch:A(300,250,'H'),cr:A(385,95,'Cr'),co1:A(385,35,'O'),co2:A(440,145,'O'),coh:A(465,95,'OH'),cohL:A(80,245,'H2O'),oh:A(80,245,'H',{ghost:1}),w:A(395,238,'O',{lp:[180,270]}),wh1:A(440,218,'H'),wh2:A(440,256,'H')},
+   bonds:[['c','o',1],['c','m1',1],['c','m2',1],['c','ch',1],['o','cr',1],['cr','co1',2],['cr','co2',2],['cr','coh',1],['w','wh1',1],['w','wh2',1]],
+   texts:[{x:130,y:60,s:'éster cromato',c:'note'}],
+   arrows:[{f:[377,238],t:[312,247],b:10},{f:[307,212],t:[307,134],b:18},{f:[342,101],t:[372,110],b:12}]}},
+ {t:'Cetona e cromo reduzido',nox:2,d:'Forma-se a acetona: o carbono passou de 0 para +2, oxidado. O cromo recebeu os elétrons e passou de Cr(VI) a Cr(IV). Na prática a cor muda de laranja para verde, o que serve de teste.',
+  s:{atoms:{c:A(300,170,'C'),o:A(300,95,'O',{lp:[200,340]}),m1:A(215,170,'H3C'),m2:A(385,170,'CH3'),cr:A(480,95,'Cr'),co1:A(480,35,'O'),co2:A(535,145,'OH'),coh:A(560,95,'OH'),cohL:A(80,245,'H2O'),oh:A(80,245,'H',{ghost:1}),w:A(395,238,'O',{c:'+'}),ch:A(350,238,'H'),wh1:A(440,218,'H'),wh2:A(440,256,'H')},
+   bonds:[['c','o',2],['c','m1',1],['c','m2',1],['cr','co1',2],['cr','co2',1],['cr','coh',1],['w','wh1',1],['w','wh2',1],['w','ch',1]],
+   texts:[{x:130,y:60,s:'acetona',c:'name'},{x:500,y:190,s:'Cr(VI) → Cr(IV)',c:'note'}]}}
+ ]},
+
+{id:'primario',tab:'PCC × Jones',title:'Álcool primário: aldeído ou ácido?',sub:'etanol → etanal (PCC) ou → ácido acético (H₂CrO₄ em água)',
+ facts:{Reagente:'PCC (anidro) ou H₂CrO₄ (aquoso)',Tipo:'oxidação',Transfere:'2 vezes: H do C e do O','Nox do C':'−1 → +1 → +3',Alcance:'em água o aldeído hidrata e oxida de novo'},
+ steps:[
+ {t:'Álcool primário',nox:-1,d:'O carbono do etanol tem dois H. A primeira oxidação, com PCC ou com H₂CrO₄, segue o mesmo mecanismo do álcool secundário e leva ao aldeído.',
+  s:{atoms:{c:A(300,170,'C'),o:A(300,95,'O',{lp:[0,150]}),oh1:A(255,65,'H'),me:A(215,170,'H3C'),ch:A(300,250,'H'),ch2:A(385,170,'H')},
+   bonds:[['c','o',1],['o','oh1',1],['c','me',1],['c','ch',1],['c','ch2',1]],
+   texts:[{x:470,y:60,s:'etanol',c:'name'},{x:470,y:86,s:'1ª oxidação: PCC ou H₂CrO₄',c:'note'}]}},
+ {t:'Aldeído em água',nox:1,d:'Com PCC, em diclorometano sem água, a reação para aqui: etanal. Com o reagente de Jones o meio é aquoso, e a água ataca a carbonila do aldeído.',
+  s:{atoms:{c:A(300,170,'C'),o:A(300,95,'O',{lp:[200,340]}),me:A(215,170,'H3C'),ch:A(300,250,'H'),w:A(400,170,'O',{lp:[180,270]}),wh1:A(445,145,'H'),wh2:A(445,195,'H')},
+   bonds:[['c','o',2],['c','me',1],['c','ch',1],['w','wh1',1],['w','wh2',1]],
+   texts:[{x:130,y:60,s:'etanal',c:'name'},{x:130,y:86,s:'PCC (anidro) para aqui',c:'note'}],
+   arrows:[{f:[384,170],t:[316,168],b:10},{f:[306,134],t:[314,104],b:14}]}},
+ {t:'Hidrato (gem-diol)',nox:1,d:'Após transferências de próton forma-se o hidrato: dois OH no mesmo carbono. O hidrato tem um H no carbono ligado a OH, ou seja, se comporta como um álcool e pode ser oxidado de novo.',
+  s:{atoms:{c:A(300,170,'C'),o:A(300,95,'O',{lp:[0,150]}),wh2:A(255,65,'H'),me:A(215,170,'H3C'),ch:A(300,250,'H'),w:A(385,170,'O',{lp:[270,90]}),wh1:A(430,145,'H')},
+   bonds:[['c','o',1],['o','wh2',1],['c','me',1],['c','ch',1],['c','w',1],['w','wh1',1]],
+   texts:[{x:130,y:60,s:'hidrato',c:'name'}]}},
+ {t:'Segunda oxidação',nox:1,d:'O hidrato forma um éster cromato e sofre a mesma eliminação: a água remove o H do carbono, forma-se a C=O e o cromo é reduzido.',
+  s:{atoms:{c:A(300,170,'C'),o:A(300,95,'O',{lp:[340]}),me:A(215,170,'H3C'),ch:A(300,250,'H'),w:A(385,170,'O',{lp:[270,90]}),wh1:A(430,145,'H'),cr:A(210,95,'Cr'),co1:A(210,35,'O'),co2:A(150,140,'O'),coh:A(130,95,'HO'),wh2:A(130,95,'H',{ghost:1}),b:A(395,238,'O',{lp:[180,270]}),bh1:A(440,218,'H'),bh2:A(440,256,'H')},
+   bonds:[['c','o',1],['o','cr',1],['cr','co1',2],['cr','co2',2],['cr','coh',1],['c','me',1],['c','ch',1],['c','w',1],['w','wh1',1],['b','bh1',1],['b','bh2',1]],
+   arrows:[{f:[377,238],t:[312,247],b:10},{f:[307,212],t:[307,134],b:18},{f:[258,101],t:[224,108],b:-12}]}},
+ {t:'Ácido carboxílico',nox:3,d:'Forma-se o ácido acético: o carbono foi de −1 a +3, duas oxidações. Resumo: PCC ou DMP (sem água) dão aldeído; H₂CrO₄ ou KMnO₄ (em água) levam ao ácido.',
+  s:{atoms:{c:A(300,170,'C'),o:A(300,95,'O',{lp:[200,340]}),me:A(215,170,'H3C'),w:A(385,170,'O',{lp:[270,90]}),wh1:A(430,145,'H'),b:A(395,238,'O',{c:'+'}),ch:A(350,238,'H'),bh1:A(440,218,'H'),bh2:A(440,256,'H')},
+   bonds:[['c','o',2],['c','me',1],['c','w',1],['w','wh1',1],['b','bh1',1],['b','bh2',1],['b','ch',1]],
+   texts:[{x:130,y:60,s:'ácido acético',c:'name'},{x:130,y:86,s:'C: −1 → +3',c:'note'}]}}
+ ]}
+];
+
+const QUIZ=[
+ {q:'O NaBH₄ reduz qual destes compostos?',o:['acetato de etila','ciclo-hexanona','ácido acético'],a:1,e:'O NaBH₄ reduz aldeídos e cetonas; ésteres e ácidos exigem LiAlH₄.',m:0},
+ {q:'Acetato de etila + LiAlH₄, depois H₃O⁺ →',o:['etanol (2 mol)','etanal','ácido acético'],a:0,e:'Dois hidretos: o éster vai a aldeído e depois a álcool. O grupo OEt sai como etanol.',m:1},
+ {q:'Qual o número de oxidação do carbono carbonílico da acetona?',o:['0','+2','+3'],a:1,e:'Duas ligações C–C (0) e uma dupla com O (+2): total +2.',m:2},
+ {q:'Álcool terciário + H₂CrO₄ →',o:['cetona','não reage','aldeído'],a:1,e:'O carbono do álcool 3º não tem H para ser removido na etapa de eliminação.',m:2},
+ {q:'1-butanol + PCC em CH₂Cl₂ →',o:['butanal','ácido butanoico','2-butanona'],a:0,e:'Sem água não se forma hidrato, e a oxidação para no aldeído.',m:3},
+ {q:'1-butanol + H₂CrO₄ em água (Jones) →',o:['butanal','ácido butanoico','butano'],a:1,e:'Em água o aldeído forma hidrato, que é oxidado de novo até ácido.',m:3},
+ {q:'Para transformar um éster em aldeído, use:',o:['NaBH₄','LiAlH₄','DIBAL-H a −78 °C'],a:2,e:'O DIBAL-H entrega um único hidreto em baixa temperatura e a reação para no aldeído.',m:1}
+];
+
+const DER=[
+ {k:'a1',n:'Álcool 1º'},{k:'a2',n:'Álcool 2º'},{k:'al',n:'Aldeído'},{k:'ce',n:'Cetona'},{k:'ac',n:'Ácido carboxílico'},{k:'es',n:'Éster'}
+];
+const CONV={
+ 'a1-al':[1,'Oxidação branda, sem água: PCC ou periodinana de Dess–Martin (DMP).',3],
+ 'a1-ac':[1,'Oxidação forte, em água: H₂CrO₄ (Jones) ou KMnO₄.',3],
+ 'a2-ce':[1,'Oxidação: H₂CrO₄, PCC ou DMP.',2],
+ 'a2-ac':[0,'Não: a cetona não tem H no carbono carbonílico, então a oxidação para nela.',2],
+ 'al-ac':[1,'Oxidação: H₂CrO₄, KMnO₄ ou Ag₂O (Tollens).',3],
+ 'al-a1':[1,'Redução: NaBH₄ ou LiAlH₄.',0],
+ 'ce-a2':[1,'Redução: NaBH₄ ou LiAlH₄.',0],
+ 'ce-ac':[0,'Não: seria preciso quebrar uma ligação C–C.',null],
+ 'ac-a1':[1,'Redução forte: LiAlH₄. O NaBH₄ não reduz ácidos.',1],
+ 'es-a1':[1,'Redução forte: LiAlH₄ (dá também o álcool do grupo OR).',1],
+ 'es-al':[1,'Redução parcial: DIBAL-H a −78 °C, que para no aldeído.',null],
+ 'ac-al':[0,'Não diretamente: o LiAlH₄ vai até o álcool. Reduza ao álcool e oxide com PCC, ou converta em éster e use DIBAL-H.',null],
+ 'ac-es':[0,'Não é redox: é substituição acílica (esterificação de Fischer).',null],
+ 'es-ac':[0,'Não é redox: é substituição acílica (hidrólise ou saponificação).',null]
+};
+const CONV_DEFAULT=[0,'Não por uma oxidação ou redução direta: a posição do carbono no esqueleto mudaria.',null];
+const RUNGS=[
+ {n:'CO₂',l:'4 ligações C–O'},
+ {n:'Ácido carboxílico, éster',l:'3 ligações C–O'},
+ {n:'Aldeído, cetona',l:'2 ligações C–O'},
+ {n:'Álcool',l:'1 ligação C–O'},
+ {n:'Alcano',l:'nenhuma'}
+];
+
+/* ====================== MOTOR DE DESENHO ====================== */
+const scene=document.getElementById('scene'), arrowsG=document.getElementById('arrows');
+const NS='http://www.w3.org/2000/svg';
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const cw=c=>/\d/.test(c)?9:(/[a-z]/.test(c)?11:14);
+const lwid=l=>[...l].reduce((s,c)=>s+cw(c),0);
+const box=at=>(!at||!at.l)?[0,0]:[lwid(at.l)/2+3,12];
+
+function labelSVG(at,x,y,op){
+  if(!at.l||op<=0.01) return '';
+  const segs=at.l.match(/\d+|\D+/g); let s='',down=false;
+  for(const g of segs){
+    if(/\d/.test(g)){s+=`<tspan dy="6" font-size="15">${g}</tspan>`;down=true}
+    else{s+=`<tspan${down?' dy="-6"':''}>${g}</tspan>`;down=false}
+  }
+  return `<text x="${x}" y="${y}" class="lab" text-anchor="middle" dominant-baseline="central" opacity="${op}">${s}</text>`;
+}
+function edgeDist(hw,hh,ang){const c=Math.abs(Math.cos(ang)),s=Math.abs(Math.sin(ang));return Math.min(c>1e-6?hw/c:1e9,s>1e-6?hh/s:1e9)}
+function decoSVG(at,x,y,op){
+  if(op<=0.01) return ''; let s=''; const [hw,hh]=box(at);
+  if(at.c){const [cx,cy]=at.cp?[x+at.cp[0],y+at.cp[1]]:[x+hw+4,y-17]; const p=at.c==='+';
+    s+=`<g opacity="${op}"><circle cx="${cx}" cy="${cy}" r="7.5" class="${p?'chg-p':'chg-n'}" stroke-width="1.6"/><text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="600" class="${p?'chg-pt':'chg-nt'}">${p?'+':'−'}</text></g>`}
+  (at.lp||[]).forEach(d=>{const a=d*Math.PI/180,r=edgeDist(hw,hh,a)+4,px=x+Math.cos(a)*r,py=y+Math.sin(a)*r,nx=-Math.sin(a)*3.4,ny=Math.cos(a)*3.4;
+    s+=`<circle cx="${px+nx}" cy="${py+ny}" r="2.1" class="lp" opacity="${op}"/><circle cx="${px-nx}" cy="${py-ny}" r="2.1" class="lp" opacity="${op}"/>`});
+  if(at.rad!==undefined){const a=at.rad*Math.PI/180,r=edgeDist(hw,hh,a)+5;s+=`<circle cx="${x+Math.cos(a)*r}" cy="${y+Math.sin(a)*r}" r="3.2" class="lp" opacity="${op}"/>`}
+  return s;
+}
+function trim(p,q,b){const [hw,hh]=b; if(!hw) return p; const dx=q[0]-p[0],dy=q[1]-p[1];
+  let t=Math.min(Math.abs(dx)>1e-6?hw/Math.abs(dx):1e9,Math.abs(dy)>1e-6?hh/Math.abs(dy):1e9); t=Math.min(t,.45); return [p[0]+dx*t,p[1]+dy*t]}
+function ln(a,b,cls='bond',extra=''){return `<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}" class="${cls}" ${extra}/>`}
+function bondSVG(p1,p2,bd,op){
+  if(op<=0.01) return ''; const [,, order=1, style='', side=0]=bd;
+  const dx=p2[0]-p1[0],dy=p2[1]-p1[1],L=Math.hypot(dx,dy)||1,nx=-dy/L,ny=dx/L; let s='';
+  const off=(p,k)=>[p[0]+nx*k,p[1]+ny*k];
+  if(style==='wedge'){s=`<polygon points="${p1[0]},${p1[1]} ${p2[0]+nx*5},${p2[1]+ny*5} ${p2[0]-nx*5},${p2[1]-ny*5}" class="wedge"/>`}
+  else if(style==='hash'){for(let i=1;i<=7;i++){const f=i/7,px=p1[0]+dx*f,py=p1[1]+dy*f,w=.6+4.4*f;s+=ln([px-nx*w,py-ny*w],[px+nx*w,py+ny*w],'bond','stroke-width="1.8"')}}
+  else if(style==='dash'){s=ln(p1,p2,'bond','stroke-dasharray="5 5"')}
+  else if(order===2&&style==='dp'){s=ln(off(p1,-2.8),off(p2,-2.8))+ln(off(p1,2.8),off(p2,2.8),'bond','stroke-dasharray="4 4"')}
+  else if(order===2&&side){const a=[p1[0]+dx*.15,p1[1]+dy*.15],b=[p1[0]+dx*.85,p1[1]+dy*.85];s=ln(p1,p2)+ln(off(a,side*6),off(b,side*6))}
+  else if(order===2){s=ln(off(p1,-3.2),off(p2,-3.2))+ln(off(p1,3.2),off(p2,3.2))}
+  else s=ln(p1,p2);
+  return `<g opacity="${op}">${s}</g>`;
+}
+const vis=a=>a&&!a.ghost?1:0;
+const akey=a=>a?JSON.stringify([a.l,a.c,a.cp,a.lp,a.rad,!!a.ghost]):'';
+const bkey=b=>{const [x,y,o=1,s='',d=0]=b;return (x<y?x+'|'+y:y+'|'+x)+'|'+o+'|'+s+'|'+d};
+const tkey=t=>JSON.stringify(t);
+
+function surfSVG(op){ if(op<=0.01) return ''; let s=`<g opacity="${op}">`;
+  for(let x=45;x<=555;x+=30) s+=`<circle cx="${x}" cy="248" r="13" class="metal"/>`;
+  return s+`<text x="590" y="214" class="metal-t" text-anchor="end">superfície de Pd</text></g>`}
+function rxnSVG(r,op){ if(op<=0.01) return '';
+  return `<g opacity="${op}">${ln([r.x1,r.y],[r.x2-10,r.y],'rxn')}<polygon points="${r.x2},${r.y} ${r.x2-12},${r.y-6} ${r.x2-12},${r.y+6}" class="rxnh"/>${r.top?`<text x="${(r.x1+r.x2)/2}" y="${r.y-12}" text-anchor="middle" class="t-note">${r.top}</text>`:''}</g>`}
+function textSVG(t,op){ if(op<=0.01) return ''; return `<text x="${t.x}" y="${t.y}" text-anchor="middle" dominant-baseline="central" class="t-${t.c||'note'}" opacity="${op}">${t.s}</text>`}
+
+function frame(Asc,B,t){
+  const Aa=Asc?Asc.atoms:{}, Ba=B.atoms; const ids=new Set([...Object.keys(Aa),...Object.keys(Ba)]); const P={},BX={};
+  let labels='',deco='';
+  ids.forEach(id=>{const a=Aa[id],b=Ba[id];
+    const x=a&&b?a.x+(b.x-a.x)*t:(b||a).x, y=a&&b?a.y+(b.y-a.y)*t:(b||a).y; P[id]=[x,y];
+    BX[id]=box(t<.5?(a||b):(b||a));
+    if(a&&b&&akey(a)===akey(b)){labels+=labelSVG(b,x,y,vis(b));deco+=decoSVG(b,x,y,vis(b))}
+    else{ if(a){labels+=labelSVG(a,x,y,vis(a)*(1-t));deco+=decoSVG(a,x,y,vis(a)*(1-t))}
+          if(b){labels+=labelSVG(b,x,y,vis(b)*t);deco+=decoSVG(b,x,y,vis(b)*t)} }
+  });
+  const bA=new Map((Asc?Asc.bonds:[]).map(b=>[bkey(b),b])), bB=new Map(B.bonds.map(b=>[bkey(b),b]));
+  let bonds=''; const draw=(bd,op)=>{const p1=P[bd[0]],p2=P[bd[1]];bonds+=bondSVG(trim(p1,p2,BX[bd[0]]),trim(p2,p1,BX[bd[1]]),bd,op)};
+  bB.forEach((bd,k)=>draw(bd,bA.has(k)?1:t)); bA.forEach((bd,k)=>{if(!bB.has(k)) draw(bd,1-t)});
+  let extra='';
+  const sA=Asc&&Asc.surf, sB=B.surf; if(sA||sB) extra+=surfSVG(sA&&sB?1:(sB?t:1-t));
+  const tA=new Map(((Asc&&Asc.texts)||[]).map(x=>[tkey(x),x])), tB=new Map((B.texts||[]).map(x=>[tkey(x),x]));
+  tB.forEach((x,k)=>extra+=textSVG(x,tA.has(k)?1:t)); tA.forEach((x,k)=>{if(!tB.has(k)) extra+=textSVG(x,1-t)});
+  const rA=new Map(((Asc&&Asc.rxn)||[]).map(x=>[tkey(x),x])), rB=new Map((B.rxn||[]).map(x=>[tkey(x),x]));
+  rB.forEach((x,k)=>extra+=rxnSVG(x,rA.has(k)?1:t)); rA.forEach((x,k)=>{if(!rB.has(k)) extra+=rxnSVG(x,1-t)});
+  return extra+bonds+labels+deco;
+}
+
+let arrowToken=0;
+function drawArrows(B){
+  const tok=++arrowToken; arrowsG.innerHTML='';
+  (B.arrows||[]).forEach((a,i)=>{
+    const [fx,fy]=a.f,[tx,ty]=a.t,dx=tx-fx,dy=ty-fy,L=Math.hypot(dx,dy)||1,nx=-dy/L,ny=dx/L,bend=a.b||0;
+    const cx=(fx+tx)/2+nx*bend, cy=(fy+ty)/2+ny*bend;
+    let ux=tx-cx,uy=ty-cy; const ul=Math.hypot(ux,uy)||1; ux/=ul;uy/=ul; const px=-uy,py=ux;
+    const mv=a.k==='mv', bx=tx-ux*12, by=ty-uy*12;
+    const path=document.createElementNS(NS,'path');
+    path.setAttribute('d',`M${fx} ${fy} Q${cx.toFixed(1)} ${cy.toFixed(1)} ${bx.toFixed(1)} ${by.toFixed(1)}`);
+    path.setAttribute('class',mv?'mv':'arr');
+    const head=document.createElementNS(NS,'polygon'); const sg=bend>=0?1:-1;
+    const pts=a.h?`${tx},${ty} ${bx+px*7*sg},${by+py*7*sg} ${bx},${by}`:`${tx},${ty} ${bx+px*5.5},${by+py*5.5} ${bx-px*5.5},${by-py*5.5}`;
+    head.setAttribute('points',pts); head.setAttribute('class',mv?'mvh':'arrh');
+    head.style.opacity=0; path.style.opacity=0;
+    arrowsG.append(path,head);
+    const delay=reduce?0:250+i*450;
+    setTimeout(()=>{ if(tok!==arrowToken) return;
+      if(reduce){path.style.opacity=1;head.style.opacity=1;return}
+      if(mv){path.style.transition='opacity .5s';head.style.transition='opacity .5s';path.style.opacity=1;head.style.opacity=1;return}
+      const len=path.getTotalLength(); path.style.strokeDasharray=len; path.style.strokeDashoffset=len; path.style.opacity=1;
+      path.getBoundingClientRect(); path.style.transition='stroke-dashoffset .8s ease-in-out'; path.style.strokeDashoffset=0;
+      setTimeout(()=>{if(tok===arrowToken){head.style.transition='opacity .2s';head.style.opacity=1}},720);
+    },delay);
+  });
+}
+
+let raf=null;
+function transition(Asc,B){
+  cancelAnimationFrame(raf); arrowToken++; arrowsG.innerHTML='';
+  const dur=reduce?0:(Asc?850:450), t0=performance.now();
+  const step=now=>{const t=dur?Math.min(1,(now-t0)/dur):1; const e=t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+    scene.innerHTML=frame(Asc,B,e); if(t<1) raf=requestAnimationFrame(step); else drawArrows(B)};
+  raf=requestAnimationFrame(step);
+}
+
+
+
+/* ====================== MEDIDOR DE NOX ====================== */
+const nx=document.getElementById('energy'); const NX=v=>60+(v+2)*80; let noxCur=null, noxRaf=null;
+(function(){
+  const lab={'-1':'álcool 1º','0':'álcool 2º','1':'aldeído','2':'cetona','3':'ácido · éster','4':'CO₂'};
+  let s=`<defs><linearGradient id="gr" x1="0" x2="1"><stop offset="0" stop-color="var(--pos)"/><stop offset="1" stop-color="var(--arrow)"/></linearGradient></defs>
+  <rect x="${NX(-2)}" y="56" width="${NX(4)-NX(-2)}" height="6" rx="3" fill="url(#gr)" opacity=".55"/>`;
+  for(let v=-2;v<=4;v++){s+=`<line x1="${NX(v)}" y1="50" x2="${NX(v)}" y2="68" class="ax"/><text x="${NX(v)}" y="40" text-anchor="middle" class="t-nv">${v>0?'+'+v:(v<0?'−'+(-v):v)}</text>`;
+    if(lab[v]) s+=`<text x="${NX(v)}" y="88" text-anchor="middle" class="t-elab">${lab[v]}</text>`}
+  s+=`<text x="${NX(-2)}" y="114" class="t-red">◀ redução</text><text x="${NX(4)}" y="114" text-anchor="end" class="t-ox">oxidação ▶</text>`;
+  s+=`<g id="noxM"><circle r="11" cy="59" class="edot"/></g>`;
+  nx.innerHTML=s;
+})();
+function moveNox(v){
+  const m=document.getElementById('noxM'); cancelAnimationFrame(noxRaf);
+  const x0=noxCur===null?NX(v):NX(noxCur), x1=NX(v); noxCur=v;
+  const dur=reduce||x0===x1?0:800,t0=performance.now();
+  const f=now=>{const t=dur?Math.min(1,(now-t0)/dur):1,e=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+    m.setAttribute('transform',`translate(${x0+(x1-x0)*e},0)`); if(t<1) noxRaf=requestAnimationFrame(f)};
+  noxRaf=requestAnimationFrame(f);
+  $('enTitle').textContent=`Número de oxidação do carbono reagente: ${v>0?'+'+v:(v<0?'−'+(-v):v)}`;
+}
+
+/* ====================== INTERFACE ====================== */
+const $=id=>document.getElementById(id);
+let M=0,S=0,autoTimer=null;
+const tabs=$('tabs');
+MECH.forEach((m,i)=>{const b=document.createElement('button');b.className='tab';b.role='tab';b.innerHTML=`<small>${i+1}</small>${m.tab}`;b.onclick=()=>{stopAuto();select(i,0)};tabs.append(b)});
+
+function render(fromScene){
+  const m=MECH[M], st=m.steps[S];
+  [...tabs.children].forEach((b,i)=>b.setAttribute('aria-selected',i===M));
+  $('mTitle').textContent=`${M+1}. ${m.title}`; $('mSub').textContent=m.sub;
+  $('stepNum').textContent=`Etapa ${S+1} de ${m.steps.length}`; $('stepTitle').textContent=st.t; $('stepText').textContent=st.d;
+  $('prev').disabled=S===0; $('next').textContent=S===m.steps.length-1?(M<MECH.length-1?'Próximo mecanismo ▶':'Recomeçar'):'Próxima ▶';
+  const dots=$('dots'); dots.innerHTML='';
+  m.steps.forEach((_,i)=>{const d=document.createElement('button');d.className='dot';d.setAttribute('aria-label','Etapa '+(i+1));if(i===S)d.setAttribute('aria-current','step');d.onclick=()=>{stopAuto();go(i)};dots.append(d)});
+  $('facts').innerHTML=Object.entries(m.facts).map(([k,v])=>`<div><dt>${k}</dt><dd>${v}</dd></div>`).join('');
+  
+  transition(fromScene,st.s); moveNox(st.nox);
+}
+function select(mi,si){M=mi;S=si;history.replaceState(null,'','#'+MECH[M].id);render(null);
+  tabs.children[M].scrollIntoView({block:'nearest',inline:'center',behavior:reduce?'auto':'smooth'})}
+function go(si){const from=MECH[M].steps[S].s;S=si;render(from)}
+function next(){const m=MECH[M]; if(S<m.steps.length-1) go(S+1); else if(M<MECH.length-1) select(M+1,0); else select(0,0)}
+$('prev').onclick=()=>{stopAuto();if(S>0)go(S-1)};
+$('next').onclick=()=>{stopAuto();next()};
+$('replay').onclick=()=>drawArrows(MECH[M].steps[S].s);
+function stopAuto(){clearTimeout(autoTimer);autoTimer=null;$('auto').textContent='Reproduzir tudo'}
+$('auto').onclick=()=>{
+  if(autoTimer){stopAuto();return}
+  $('auto').textContent='Pausar';
+  if(S===MECH[M].steps.length-1) go(0);
+  const tick=()=>{const m=MECH[M]; const na=(m.steps[S].s.arrows||[]).length;
+    autoTimer=setTimeout(()=>{ if(S<m.steps.length-1){go(S+1);tick()} else stopAuto() },3000+na*500)};
+  tick();
+};
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'){stopAuto();next()} if(e.key==='ArrowLeft'&&S>0){stopAuto();go(S-1)}});
+const toTop=i=>{stopAuto();select(i,0);window.scrollTo({top:0,behavior:reduce?'auto':'smooth'})};
+
+/* resumo */
+const cols=['Reagente','Tipo','Transfere','Nox do C','Alcance'];
+$('summary').innerHTML=`<tr><th></th>${cols.map(c=>`<th>${c}</th>`).join('')}</tr>`+
+  MECH.map((m,i)=>`<tr><td><a href="#${m.id}" data-m="${i}">${m.tab}</a></td>${cols.map(c=>`<td>${m.facts[c]}</td>`).join('')}</tr>`).join('');
+$('summary').addEventListener('click',e=>{const a=e.target.closest('a[data-m]');if(!a)return;e.preventDefault();toTop(+a.dataset.m)});
+
+/* escada de oxidação */
+$('ladder').innerHTML=RUNGS.map((r,i)=>`<div class="rung" style="--w:${100-i*15}%"><span class="rb"></span><span class="rn"><b>${r.n}</b></span><span class="rl">${r.l}</span></div>`).join('');
+const conv={from:null,to:null};
+const mk=(id,k)=>$(id).innerHTML=DER.map(d=>`<button class="opt" data-c="${k}" data-v="${d.k}" aria-pressed="false">${d.n}</button>`).join('');
+mk('cFrom','from'); mk('cTo','to');
+document.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{
+  const k=b.dataset.c; conv[k]=b.dataset.v;
+  document.querySelectorAll(`[data-c="${k}"]`).forEach(x=>x.setAttribute('aria-pressed',x===b));
+  const out=$('flowOut'); if(!conv.from||!conv.to) return; out.hidden=false;
+  if(conv.from===conv.to){out.className='';out.innerHTML='<p>Escolha dois grupos diferentes.</p>';return}
+  const [ok,t,mi]=CONV[conv.from+'-'+conv.to]||CONV_DEFAULT; out.className=ok?'ok':'no';
+  out.innerHTML=`<p class="fres">${ok?'Possível':'Não diretamente'}</p><p>${t}</p>${mi!==null?`<a href="#${MECH[mi].id}" data-m="${mi}">Ver o mecanismo passo a passo</a>`:''}`;
+});
+$('flowOut').addEventListener('click',e=>{const a=e.target.closest('a[data-m]');if(!a)return;e.preventDefault();toTop(+a.dataset.m)});
+$('flowReset').onclick=()=>{conv.from=conv.to=null;document.querySelectorAll('[data-c]').forEach(x=>x.setAttribute('aria-pressed','false'));$('flowOut').hidden=true};
+
+/* desafios */
+$('quiz').innerHTML=QUIZ.map((q,i)=>`<div class="q" data-i="${i}"><p class="stem">${i+1}. ${q.q}</p><div class="opts">${q.o.map((o,j)=>`<button class="opt" data-j="${j}">${o}</button>`).join('')}</div><p class="fb" hidden></p></div>`).join('');
+$('quiz').addEventListener('click',e=>{
+  const link=e.target.closest('a[data-m]'); if(link){e.preventDefault();toTop(+link.dataset.m);return}
+  const b=e.target.closest('.opt'); if(!b) return; const box=b.closest('.q'),q=QUIZ[+box.dataset.i],j=+b.dataset.j,fb=box.querySelector('.fb');
+  box.querySelectorAll('.opt').forEach(o=>o.classList.remove('right','wrong'));
+  const ok=j===q.a; b.classList.add(ok?'right':'wrong'); if(!ok) box.querySelectorAll('.opt')[q.a].classList.add('right');
+  fb.hidden=false; fb.className='fb '+(ok?'right':'wrong');
+  fb.innerHTML=(ok?'Correto. ':'Ainda não. ')+q.e+` <a href="#${MECH[q.m].id}" data-m="${q.m}">Rever ${MECH[q.m].tab}</a>`;
+});
+
+const start=Math.max(0,MECH.findIndex(m=>'#'+m.id===location.hash));
+select(start,0);
+window.addEventListener('hashchange',()=>{const i=MECH.findIndex(m=>'#'+m.id===location.hash);if(i>=0&&i!==M){stopAuto();select(i,0)}});
+
+</script>
+</body>
+</html>
